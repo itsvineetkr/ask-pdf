@@ -5,7 +5,7 @@ It also maintains history and supports speech-to-text functionality, so you can 
 It is built using Web Sockets, making it seamless in terms of interactions.
 It uses Mistral AI from Hugging Face for the language model and Huggingface embeddings for creating a vector database of documents collected out of PDF for retrieval.
 
-# API endpoints
+## API endpoints
 
 ### 1. Homepage
 - **GET `/`**: Renders the homepage with the `homepage.html` template.
@@ -20,10 +20,10 @@ It uses Mistral AI from Hugging Face for the language model and Huggingface embe
 - **POST `/generate-response`**: Accepts a PDF name and question, retrieves the document's content, and generates an AI-based response using tools.
 
 
-# Data storing
+## Data storing
 There are two models. One is `questions` which store all the questions and their answers for a particular pdf and the other one is `pdfMetadata` which stores the metadata of all the pdfs ever uploaded.
 
-# Installation
+## Installation
 
 1. **Clone the repository:**
     ```bash
@@ -42,7 +42,7 @@ There are two models. One is `questions` which store all the questions and their
     pip install -r requirements.txt
     ```
 
-# Setting up the .env file
+## Setting up the .env file
 
 1. **Create a `.env` file in the root directory of your project.**
 

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ask PDF</title>
+    <link rel="stylesheet" href="../static/css/homepage.css" />
+    <script src="../scripts/js/client.js"></script>
+  </head>
+  <body>
+    <header>
+      <nav>
+        <form id="uploadForm" action="/upload" method="POST" enctype="multipart/form-data">
+          <input type="file" id="fileInput" name="pdf" accept="application/pdf" style="display: none;" onchange="uploadFile()" />
+          <button type="button" id="uploadButton" onclick="document.getElementById('fileInput').click()">Upload PDF</button>
+        </form>
+      </nav>
+    </header>
+    <main>
+      <h1>Ask Questions from PDFs Using AI!</h1>
+      <h3>Upload your pdf and ask questions efforlessly.</h3>
+      <form id="uploadForm" action="/upload" method="POST" enctype="multipart/form-data">
+        <input type="file" id="fileInput" name="pdf" accept="application/pdf" style="display: none;" onchange="uploadFile()" />
+        <button type="button" id="uploadButton" onclick="document.getElementById('fileInput').click()">Upload PDF!</button>
+      </form>
+      <div class="container-loader">
+        <div class="loader"></div>
+      </div>
+    </main>
+  </body>
+</html>

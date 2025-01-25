@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ask pdf</title>
+    <link rel="stylesheet" href="../static/css/ask.css" />
+  </head>
+  <body>
+    <header>
+      <nav>
+        <a href="/">Home</a>
+        {% if pdf_uploaded %}
+          <div class="pdf-name">{{ pdf_name }}</div>
+        {% endif %}
+      </nav>
+    </header>
+    <main>
+      <div class="chatbox"></div>
+      <div class="popup">
+        <div class="pop-content">
+          <p class="connection-closing-message"></p>
+        </div>
+      </div>
+
+      <div class="container-loader">
+        <div class="loader"></div>
+      </div>
+      {% if pdf_uploaded %}
+        <div class="ask-question">
+          <div class="pdf-name" style="display: none;">{{ pdf_name }}</div>
+          <input type="text" name="question" placeholder="Ask a question..." />
+          <button id="messageInput">Ask</button>
+          <button id="start">Record</button>
+        </div>
+      {% endif %}
+    </main>
+
+    <script>
+      function uploadFile() {
+        const fileInput = document.getElementById('fileInput')
+        const uploadForm = document.getElementById('uploadForm')
+      
+        if (fileInput.files.length > 0) {
+          document.getElementById('uploadButton').disabled = true
+          uploadForm.submit()
+        }
+      }
+      
+      const ws = new WebSocket('ws://127.0.0.1:8000/ask')
+      ws.onopen = () => {
+        console.log('Connected to WebSocket server')
+        const pdfName = document.querySelector('.pdf-name').innerText
+        const pdfNameBytes = new TextEncoder().encode(pdfName)
+        const pdfNameLength = pdfNameBytes.length
+      
+        const buffer = new ArrayBuffer(1 + 4 + pdfNameLength)
+        const view = new DataView(buffer)
+      
+        view.setUint8(0, 0b00) // First 2 bits are zero for text
+        view.setUint32(1, pdfNameLength, true) // Next four bytes represent the size of pdf name
+      
+        let offset = 5
+        pdfNameBytes.forEach((byte, index) => {
+          view.setUint8(offset + index, byte)
+        })
+      
+        ws.send(buffer)
+      }
+      ws.binaryType = 'arraybuffer' // Receive messages as ArrayBuffer
+      
+      /*
+                
+                Structure of the data sent via WebSocket:
+              
+                2 bits: 00 for text, 01 for audio, 10 for other task, 11 for some other
+              
+                if it is via typing:
+                  2 bits: 00
+                  m bytes: Question
+              
+                if it is via speech:
+                  2 bits: 01
+                  m bytes: Audio data
+                
+                */
+      
+      // ------------------- By Speech STARTS---------------------------
+      
+      const startButton = document.getElementById('start')
+      
+      let mediaRecorder
+      let audioChunks = []
+      let start = false
+      
+      startButton.addEventListener('click', async () => {
+        if (start == false) {
+          start = true
+          document.querySelector('input[name="question"]').value = 'Recording...'
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+          mediaRecorder = new MediaRecorder(stream)
+      
+          mediaRecorder.ondataavailable = (event) => {
+            audioChunks.push(event.data)
+          }
+      
+          mediaRecorder.onstop = async () => {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/wav' })
+            audioChunks = []
+            const reader = new FileReader()
+            reader.readAsArrayBuffer(audioBlob)
+            reader.onloadend = () => {
+              const arrayBuffer = reader.result
+              const byteArray = new Uint8Array(1 + arrayBuffer.byteLength)
+              byteArray[0] = 0b01 // 2 bits to indicate it's audio
+              const view = new DataView(byteArray.buffer)
+              byteArray.set(new Uint8Array(arrayBuffer), 1) // Set audio data after the first byte
+              ws.send(byteArray.buffer)
+            }
+          }
+      
+          mediaRecorder.start()
+        } else {
+          document.querySelector('input[name="question"]').value = ''
+          document.querySelector('.loader').style.display = 'block'
+          mediaRecorder.stop()
+          start = false
+        }
+      })
+      
+      // ------------------- By Speech END ---------------------------
+      
+      // ------------------- By Typing STARTS ------------------------
+      
+      const input = document.getElementById('messageInput')
+      input.addEventListener('click', function (event) {
+        const question = document.querySelector('input[name="question"]').value
+        document.querySelector('.loader').style.display = 'block'
+      
+        const questionBytes = new TextEncoder().encode(question)
+      
+        const buffer = new ArrayBuffer(1 + questionBytes.length)
+        const view = new DataView(buffer)
+      
+        view.setUint8(0, 0b10) // First 2 bits are zero for text
+        
+        let offset = 1
+        questionBytes.forEach((byte, index) => {
+          view.setUint8(offset + index, byte)
+        })
+      
+        ws.send(buffer)
+      })
+      // ------------------- By Typing ENDS ------------------------
+            
+      ws.onmessage = (event) => {
+        document.querySelector('.loader').style.display = 'none'
+      
+        const dataView = new DataView(event.data)
+        const questionLength = dataView.getUint32(0, true)
+        const questionBytes = new Uint8Array(event.data, 4, questionLength)
+        const responseBytes = new Uint8Array(event.data, 4 + questionLength)
+      
+        const question = new TextDecoder().decode(questionBytes)
+        const response = new TextDecoder().decode(responseBytes)
+      
+        const chatbox = document.querySelector('.chatbox')
+        const questionDiv = document.createElement('div')
+        const qnaDivQuestion = document.createElement('div')
+        const imgQuestion = document.createElement('img')
+        const pQuestion = document.createElement('p')
+      
+        const qnaDivAnswer = document.createElement('div')
+        const imgAnswer = document.createElement('img')
+        const pAnswer = document.createElement('p')
+      
+        questionDiv.classList.add('question')
+        qnaDivQuestion.classList.add('qna')
+        imgQuestion.src = 'static/images/user.png'
+        imgQuestion.alt = ''
+        imgQuestion.style.maxWidth = '50px'
+        qnaDivQuestion.appendChild(imgQuestion)
+        qnaDivQuestion.appendChild(pQuestion)
+      
+        qnaDivAnswer.classList.add('qna')
+        imgAnswer.src = 'static/images/ai_photo.png'
+        imgAnswer.alt = ''
+        imgQuestion.style.maxWidth = '50px'
+      
+        qnaDivAnswer.appendChild(imgAnswer)
+        qnaDivAnswer.appendChild(pAnswer)
+      
+        pQuestion.textContent = question
+        pAnswer.textContent = response
+      
+        questionDiv.appendChild(qnaDivQuestion)
+        questionDiv.appendChild(qnaDivAnswer)
+      
+        chatbox.appendChild(questionDiv)
+      
+        document.querySelector('input[name="question"]').value = ''
+      }
+    </script>
+  </body>
+</html>

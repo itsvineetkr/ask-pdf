@@ -204,3 +204,9 @@ nav a {
     align-items: center;
     flex-direction: column;
 }
+
+.chat-section{
+    display: none;
+    height: 100%;
+    width: 100%;
+}

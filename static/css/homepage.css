@@ -40,7 +40,7 @@ nav a {
 }
 
 main {
-    height: 90vh;
+    height: auto;
     width: 100vw;
     display: flex;
     flex-direction: column;

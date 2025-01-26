@@ -18,8 +18,8 @@ app = FastAPI()
 
 templates = Jinja2Templates(directory="templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
-UPLOADS_DIR = Path("uploads")
-UPLOADS_DIR.mkdir(exist_ok=True)
+uploads_dir = Path("uploads")
+uploads_dir.mkdir(exist_ok=True)
 
 
 def get_db():
@@ -49,12 +49,13 @@ async def upload_pdf(db: Session = Depends(get_db), file: UploadFile = File(...)
     - **db**: Database session for storing file metadata.
     """
     try:
-        file_location = os.path.join(UPLOADS_DIR, "pdfs", file.filename)
-        await save_pdf(file, db, file_location)
-        await VectorDBManager.create_vector_db(file_location, file.name)
-        return {"status": "ok"}
+        await save_pdf(file, db, uploads_dir)
+        await VectorDBManager.create_vector_db(file.filename, uploads_dir)
+
+        return {"status": "ok", "response": "PDF Uploaded and Vector DB Created!"}
+    
     except Exception as e:
-        return {"status": f"error encountered: {e}"}
+        return {"status": "error", "response": f"error encountered: {e}"}
 
 
 @app.post("/transcribe-audio")
@@ -64,8 +65,17 @@ async def transcribe_audio(file: UploadFile = File(...)):
 
     - **file**: The audio file to transcribe.
     """
-    transcript = await get_transcript(file)
-    return {"transcript": transcript}
+    try:
+        transcript = await get_transcript(file)
+    
+        return {
+            "status": "ok",
+            "response": "Transcript generated!",
+            "transcript": transcript,
+        }
+    
+    except Exception as e:
+        return {"status": "error", "response": f"error encountered: {e}"}
 
 
 @app.post("/generate-response")
@@ -81,15 +91,18 @@ async def generate_response(data: RequestData):
     if not data.pdf_name or not data.question:
         return {
             "status": "error",
-            "message": "pdf_name and question are required fields",
+            "response": "pdf_name and question are required fields",
         }
+    
     pdf_name = data.pdf_name
     question = data.question
 
     try:
-        agent = await get_agent(pdf_name)
+        agent = await get_agent(pdf_name, uploads_dir)
         response = agent.run(question)
         response = response[: response.find("Previous conversation history:")]
+        
         return {"status": "ok", "response": response}
+    
     except Exception as e:
-        return {"status": "error", "message": str(e)}
+        return {"status": "error", "response": f"error encountered: {e}"}

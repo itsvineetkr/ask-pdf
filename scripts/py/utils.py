@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 from fastapi import File
 
 from .crud import add_pdf_in_db
-from .constants import HUGGINGFACEHUB_API_TOKEN, API_URL_WHISPER, UPLOADS_DIR, MODEL_ID
+from .constants import HUGGINGFACEHUB_API_TOKEN, API_URL_WHISPER, MODEL_ID
 from .tools import get_retrieval_tool, get_search_tool
 from .prompts import AGENT_SYSTEM_MESSAGE
 
@@ -26,35 +26,36 @@ class VectorDBManager:
     def __init__(self):
         pass
 
-    async def create_vector_db(pdf_path, pdf_name):
+    async def create_vector_db(pdf_name: str, uploads_dir: str):
         """
         Create a vector database from a PDF file.
 
         Args:
-            pdf_path (str): Path to the PDF file.
             pdf_name (str): Name of the PDF file.
+            uploads_dir (str): Path to the uploads folder.
 
         ReturnspdfMetadata:
             vector database (FAISS)
         """
+        pdf_path = uploads_dir / "pdfs" / pdf_name
         document = PyPDFLoader(pdf_path).load()
         splitter = RecursiveCharacterTextSplitter()
         documents = splitter.split_documents(document)
 
         db = FAISS.from_documents(documents, HuggingFaceEmbeddings())
-        db.save_local(UPLOADS_DIR / "vec_dbs" / pdf_name)
+        db.save_local(uploads_dir / "vec_dbs" / pdf_name)
 
-    async def get_retriever(pdf_name: str):
+    async def get_retriever(pdf_name: str, uploads_dir: str):
         """
         Asynchronously loads a FAISS vector database and returns a retriever object.
 
         Args:
             pdf_name (str): The name of the PDF file for which the retriever is to be created.
-
+            uploads_dir (str): Path to the uploads folder.
         Returns:
             retriever: A retriever object that can be used to query the vector database.
         """
-        vector_db_path = UPLOADS_DIR / "vec_dbs" / pdf_name
+        vector_db_path = uploads_dir / "vec_dbs" / pdf_name
         vector_db = FAISS.load_local(
             vector_db_path,
             embeddings=HuggingFaceEmbeddings(),
@@ -65,19 +66,19 @@ class VectorDBManager:
         return retriever
 
 
-async def save_pdf(file: File, db: Session, file_location: str):
+async def save_pdf(file: File, db: Session, uploads_dir: str):
     """
     Save a PDF file to the specified location and add its entry to the database.
 
     Args:
         file (File): The PDF file to be saved.
         db (Session): The database session to use for adding the PDF entry.
-        file_location (str): The location where the PDF file will be saved.
+        uploads_dir (str): Path to the uploads folder.
 
     Returns:
         None
     """
-    with open(file_location, "wb") as f:
+    with open(uploads_dir / "pdfs" / file.filename, "wb") as f:
         content = await file.read()
         f.write(content)
     add_pdf_in_db(db, pdf_name=file.filename)
@@ -103,12 +104,13 @@ async def get_transcript(file: File):
     return transcript
 
 
-async def get_agent(pdf_name: str):
+async def get_agent(pdf_name: str, uploads_dir: str):
     """
     Asynchronously initializes and returns an agent configured for conversational interactions with a PDF document.
 
     Args:
         pdf_name (str): The name of the PDF document to be used for retrieval.
+        uploads_dir (str): Path to the uploads folder.
 
     Returns:
         Agent: An initialized agent configured with tools for search and retrieval,
@@ -122,7 +124,7 @@ async def get_agent(pdf_name: str):
     - A system message defined by AGENT_SYSTEM_MESSAGE.
     """
     memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
-    retriever = VectorDBManager.get_retriever(pdf_name)
+    retriever = await VectorDBManager.get_retriever(pdf_name, uploads_dir)
     llm = get_llm()
     tools = [get_search_tool(), get_retrieval_tool(retriever)]
 
@@ -136,3 +138,4 @@ async def get_agent(pdf_name: str):
     )
 
     return agent
+

@@ -14,5 +14,3 @@ HUGGINGFACEHUB_API_TOKEN = os.getenv("HUGGINGFACEHUB_API_TOKEN")
 MODEL_ID = "mistralai/Mistral-7B-Instruct-v0.3"
 
 TAVILY_API_KEY = os.getenv("TAVILY_API_KEY")
-
-UPLOADS_DIR = Path("../../uploads")

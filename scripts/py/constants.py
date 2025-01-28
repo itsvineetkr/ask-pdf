@@ -12,5 +12,6 @@ API_URL_WHISPER = (
 HUGGINGFACEHUB_API_TOKEN = os.getenv("HUGGINGFACEHUB_API_TOKEN")
 
 MODEL_ID = "mistralai/Mistral-7B-Instruct-v0.3"
+# MODEL_ID = "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B"
 
 TAVILY_API_KEY = os.getenv("TAVILY_API_KEY")

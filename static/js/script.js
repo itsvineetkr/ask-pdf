@@ -19,5 +19,3 @@ const add_conversation = function(question, answer){
     chatBox.appendChild(aiMessage);
 };
 
-
-

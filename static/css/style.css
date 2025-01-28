@@ -1,0 +1,127 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+
+
+body{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    max-width: 100vw;
+    padding-bottom: 50px;
+    font-family: 'Montserrat', sans-serif;
+    background-color: #212121;
+    color: white;
+
+}
+
+.upload-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin: 50px 0;
+}
+
+.upload-container h1{
+    font-weight: 400;
+    font-size: 50px;
+}
+
+.upload-container h3{
+    font-weight: 300;
+}
+
+.upload-container label{
+    padding: 20px 0 15px 0;
+}
+
+.upload-container input{
+    background-color: #121212;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+.upload-container button{
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+}
+
+.chat-container {
+    width: 800px;
+    max-width: 95vw;
+    background-color: #121212;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.chat-box {
+    flex: 1;
+    padding: 20px;
+}
+
+.message {
+    margin-bottom: 20px;
+    display: flex;
+}
+
+.user {
+    justify-content: flex-end;
+}
+
+.ai {
+    justify-content: flex-start;
+}
+
+.message.user .content {
+    background: #007bff;
+    color: white;
+}
+
+.message.ai .content {
+    background: #e9e9eb;
+    color: black;
+}
+
+.content {
+    padding: 10px 15px;
+    border-radius: 20px;
+    max-width: 70%;
+}
+
+.input-box {
+    display: flex;
+}
+
+.input-box input {
+    flex: 1;
+    padding: 15px;
+    border: none;
+    border-radius: 0;
+    outline: none;
+    color: white;
+    background: #333;
+}
+
+.send, .record {
+    padding: 15px;
+    border: none;
+    cursor: pointer;
+}
+
+.send {
+    background: #007bff;
+    color: white;
+}
+
+.record {
+    background: #e4e4e4;
+    color: black;
+} 

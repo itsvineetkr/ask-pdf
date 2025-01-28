@@ -3,15 +3,13 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 
-from sqlalchemy.orm import Session, sessionmaker
-from sqlalchemy import create_engine
 from pathlib import Path
 
 from scripts.database import SessionLocal
 from scripts.crud import *
 from scripts.utils import VectorDBManager, save_pdf, get_transcript, get_agent
 from scripts.schemas import RequestData
-from scripts.constants import DATABASE_URL
+
 
 import os
 
@@ -24,8 +22,6 @@ uploads_dir.mkdir(exist_ok=True)
 
 
 def get_db():
-    engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
-    SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
     db = SessionLocal()
     try:
         yield db
@@ -40,7 +36,7 @@ def homepage(request: Request):
 
     This endpoint renders the homepage of the application and is the default route.
     """
-    return templates.TemplateResponse("homepage.html", {"request": request})
+    return templates.TemplateResponse("index.html", {"request": request})
 
 
 @app.post("/upload-pdf")

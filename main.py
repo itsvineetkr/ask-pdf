@@ -3,19 +3,20 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy import create_engine
 from pathlib import Path
-from scripts.py.database import SessionLocal
 
-from scripts.py.crud import *
-from scripts.py.utils import VectorDBManager, save_pdf, get_transcript, get_agent
-from scripts.py.schemas import RequestData
+from scripts.database import SessionLocal
+from scripts.crud import *
+from scripts.utils import VectorDBManager, save_pdf, get_transcript, get_agent
+from scripts.schemas import RequestData
+from scripts.constants import DATABASE_URL
 
 import os
 
 
 app = FastAPI()
-
 templates = Jinja2Templates(directory="templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 uploads_dir = Path("uploads")
@@ -23,6 +24,8 @@ uploads_dir.mkdir(exist_ok=True)
 
 
 def get_db():
+    engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+    SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
     db = SessionLocal()
     try:
         yield db
@@ -53,7 +56,7 @@ async def upload_pdf(db: Session = Depends(get_db), file: UploadFile = File(...)
         await VectorDBManager.create_vector_db(file.filename, uploads_dir)
 
         return {"status": "ok", "response": "PDF Uploaded and Vector DB Created!"}
-    
+
     except Exception as e:
         return {"status": "error", "response": f"error encountered: {e}"}
 
@@ -67,13 +70,13 @@ async def transcribe_audio(file: UploadFile = File(...)):
     """
     try:
         transcript = await get_transcript(file)
-    
+
         return {
             "status": "ok",
             "response": "Transcript generated!",
             "transcript": transcript,
         }
-    
+
     except Exception as e:
         return {"status": "error", "response": f"error encountered: {e}"}
 
@@ -93,7 +96,7 @@ async def generate_response(data: RequestData):
             "status": "error",
             "response": "pdf_name and question are required fields",
         }
-    
+
     pdf_name = data.pdf_name
     question = data.question
 
@@ -101,8 +104,8 @@ async def generate_response(data: RequestData):
         agent = await get_agent(pdf_name, uploads_dir)
         response = agent.run(question)
         response = response[: response.find("Previous conversation history:")]
-        
+
         return {"status": "ok", "response": response}
-    
+
     except Exception as e:
         return {"status": "error", "response": f"error encountered: {e}"}

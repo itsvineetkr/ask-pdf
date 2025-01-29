@@ -4,39 +4,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../static/css/style.css">
-    <script src="../static/js/script.js"></script>
     <title>Ask PDF</title>
 </head>
+
 <body>
+    
+    <div class="upload-container">
+        <h1>Ask PDF</h1>
+        <h3>Ask Questions from PDFs Using AI!</h3>
+        <input type="file" class="file-input" accept="application/pdf" name="pdf">
+        <button type="button" class="upload">Upload PDF</button>
+    </div>
 
-<div class="upload-container">
-    <h1>Ask PDF</h1>
-    <h3>Ask Questions from PDFs Using AI!</h3>
-    <input type="file" id="fileInput" accept="application/pdf" name="pdf">
-    <button type="button" class="upload">Upload PDF</button>
-</div>
+    <div class="loader upload-loader"></div>
+    
+    <div class="error"></div>
+    <div class="pdf-name" style="display: none;"></div>
 
-
-<div class="chat-container">
-    <div class="chat-box" id="chat-box">
-        <div class="message user">
-            <div class="content">Hello, how can I help you?</div>
+    <div class="chat-container">
+        <div class="chat-box" id="chat-box">
         </div>
-        <div class="message ai">
-            <div class="content">Hi! I need some assistance with my project.</div>
-        </div>
-        <div class="message ai">
-            <div class="content">Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quos magnam, qui laudantium perferendis, totam distinctio neque assumenda, quasi aperiam alias voluptate rerum corrupti ratione a magni ducimus doloremque ipsam fuga officiis quia. Beatae enim quisquam modi accusamus atque possimus blanditiis laborum ut, consectetur adipisci deleniti fugiat voluptatibus aliquid quis magnam.</div>
-        </div>
-        <div class="message user">
-            <div class="content">Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quos magnam, qui laudantium perferendis, totam distinctio neque assumenda, quasi aperiam alias voluptate rerum corrupti ratione a magni ducimus doloremque ipsam fuga officiis quia. Beatae enim quisquam modi accusamus atque possimus blanditiis laborum ut, consectetur adipisci deleniti fugiat voluptatibus aliquid quis magnam.</div>
+        <div class="loader chat-loader"></div>
+        <div class="input-box">
+            <input type="text" class="message-input" placeholder="Type a message...">
+            <button class="send">Send</button>
+            <button class="record">Record</button>
         </div>
     </div>
-    <div class="input-box">
-        <input type="text" class="message-input" placeholder="Type a message...">
-        <button class="send">Send</button>
-        <button class="record">Record</button>
-    </div>
-</div>
+
+    <script src="../static/js/script.js"></script>
+
 </body>
+
 </html>

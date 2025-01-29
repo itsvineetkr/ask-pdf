@@ -4,5 +4,4 @@ Your primary goal is to retrieve relevant information from documents using the r
 Use other tools only if retrieval is not applicable.
 You are equipped with the following tools:
 1. **WebSearch**: Use this to look up information from the internet.
-
 """

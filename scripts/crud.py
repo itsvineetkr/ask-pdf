@@ -12,7 +12,7 @@ def add_pdf_in_db(db: Session, pdf_name: str):
 
 
 def add_question_in_db(db: Session, pdf_name: str, question: str, answer: str):
-    pdf = db.query(PdfMetadata).get(PdfMetadata.filename == pdf_name)
+    pdf = db.query(PdfMetadata).filter_by(filename=pdf_name).first()
     pdf_id = pdf.id
     db_question = Questions(pdf_id=pdf_id, question=question, answer=answer)
     db.add(db_question)
@@ -22,7 +22,9 @@ def add_question_in_db(db: Session, pdf_name: str, question: str, answer: str):
 
 
 def get_questions_from_db(db: Session, pdf_name: str):
-    pdf = db.query(PdfMetadata).get(PdfMetadata.filename == pdf_name)
+    pdf = db.query(PdfMetadata).filter(PdfMetadata.filename == pdf_name).first()
+    if pdf is None:
+        return []
     pdf_id = pdf.id
     return db.query(Questions).filter(Questions.pdf_id == pdf_id).all()
 

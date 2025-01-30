@@ -3,13 +3,14 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.vectorstores import FAISS
 from langchain_huggingface import HuggingFaceEmbeddings, HuggingFaceEndpoint
 from langchain.memory import ConversationBufferMemory
-from langchain.agents import initialize_agent
+from langchain.agents import initialize_agent, create_react_agent
+from langchain import hub
 
 import requests
 from sqlalchemy.orm import Session
 from fastapi import File
 
-from .crud import add_pdf_in_db
+from .crud import add_pdf_in_db, get_questions_from_db
 from .constants import HUGGINGFACEHUB_API_TOKEN, API_URL_WHISPER, MODEL_ID
 from .tools import get_retrieval_tool, get_search_tool
 from .prompts import AGENT_SYSTEM_MESSAGE
@@ -104,7 +105,7 @@ async def get_transcript(file: File):
     return transcript
 
 
-async def get_agent(pdf_name: str, uploads_dir: str):
+async def get_agent(pdf_name: str, uploads_dir: str, db):
     """
     Asynchronously initializes and returns an agent configured for conversational interactions with a PDF document.
 
@@ -124,10 +125,16 @@ async def get_agent(pdf_name: str, uploads_dir: str):
     - A system message defined by AGENT_SYSTEM_MESSAGE.
     """
     memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
+    
+    questions_and_answers = get_questions_from_db(db, pdf_name)
+    for qa in questions_and_answers:
+        memory.chat_memory.add_user_message(qa.question)
+        memory.chat_memory.add_ai_message(qa.answer)
+
     retriever = await VectorDBManager.get_retriever(pdf_name, uploads_dir)
     llm = get_llm()
     tools = [get_search_tool(), get_retrieval_tool(retriever)]
-
+    # react_docstore_prompt = hub.pull("hwchase17/react")
     agent = initialize_agent(
         tools=tools,
         llm=llm,

@@ -22,7 +22,7 @@ def get_search_tool():
 
 def get_retrieval_tool(retriever):
     retrieval_tool = Tool(
-        name="Document Retrieval",
+        name="DocumentRetrieval",
         func=lambda query: retrieval_tool_func(query, retriever),
         description="Use this tool to retrieve relevant information from documents.",
     )

@@ -78,7 +78,7 @@ async def transcribe_audio(file: UploadFile = File(...)):
 
 
 @app.post("/generate-response")
-async def generate_response(data: RequestData):
+async def generate_response(data: RequestData, db: Session = Depends(get_db)):
     """
     Generates a response based on the content of a specified PDF and a user question.
 
@@ -97,10 +97,10 @@ async def generate_response(data: RequestData):
     question = data.question
 
     try:
-        agent = await get_agent(pdf_name, uploads_dir)
+        agent = await get_agent(pdf_name, uploads_dir, db)
         response = agent.run(question)
         response = response[: response.find("Previous conversation history:")]
-
+        add_question_in_db(db, pdf_name, question, response)
         return {"status": "ok", "response": response}
 
     except Exception as e:

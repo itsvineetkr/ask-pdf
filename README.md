@@ -2,7 +2,6 @@
 
 This web application utilizes Langchain and FAST Api to help query PDFs and ask questions about it. 
 It also maintains history and supports speech-to-text functionality, so you can ask questions in any language by just saying it.
-It is built using Web Sockets, making it seamless in terms of interactions.
 It uses Mistral AI from Hugging Face for the language model and Huggingface embeddings for creating a vector database of documents collected out of PDF for retrieval.
 
 ## API endpoints
